@@ -17,8 +17,8 @@ fingers_history = []
 
 # ---- ROI (top-right corner) ----
 region_top = 0
-region_bottom = int(2 * FRAME_HEIGHT / 3)
-region_left = int(FRAME_WIDTH / 2)
+region_bottom = FRAME_HEIGHT
+region_left = 0
 region_right = FRAME_WIDTH
 
 
