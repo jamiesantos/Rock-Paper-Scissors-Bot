@@ -39,16 +39,17 @@ def fingers_up(hand_landmarks):
 def classify_rps(fingers):
     """
     Determine Rock / Paper / Scissors from finger states
+    Ignores thumb for stability.
     """
 
-    thumb, index, middle, ring, pinky = fingers
+    _, index, middle, ring, pinky = fingers
 
-    # Rock: all folded
-    if not any(fingers):
+    # Rock: all four fingers folded
+    if not index and not middle and not ring and not pinky:
         return "ROCK"
 
-    # Paper: all extended
-    if all(fingers):
+    # Paper: all four fingers extended
+    if index and middle and ring and pinky:
         return "PAPER"
 
     # Scissors: index + middle only
@@ -56,7 +57,6 @@ def classify_rps(fingers):
         return "SCISSORS"
 
     return ""
-
 
 def run(camera_id, width, height):
 
