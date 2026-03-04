@@ -2,10 +2,13 @@ import cv2
 import mediapipe as mp
 import time
 import argparse
+import socket
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 
+ARM_IP = "10.214.159.113"   # <-- change to arm Pi IP
+PORT = 5005
 
 def fingers_up(hand_landmarks):
     """
@@ -60,6 +63,10 @@ def classify_rps(fingers):
 
 def run(camera_id, width, height):
 
+    #TCP socket setup to communicate with robot arm
+    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client.connect((ARM_IP, PORT))
+
     cap = cv2.VideoCapture(camera_id)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
@@ -101,7 +108,15 @@ def run(camera_id, width, height):
                     now = time.time()
                     if now - last_update > update_interval:
                         fingers = fingers_up(hand_landmarks)
-                        current_rps = classify_rps(fingers)
+                        new_rps = classify_rps(fingers)
+
+                        if new_rps != current_rps:
+                            current_rps = new_rps
+                            print("Sending:", current_rps)
+                            try:
+                                client.sendall((current_rps + "\n").encode())
+                            except:
+                                print("Connection lost")
                         last_update = now
 
             # Draw RPS label
