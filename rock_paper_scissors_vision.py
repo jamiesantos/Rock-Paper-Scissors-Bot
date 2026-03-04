@@ -61,11 +61,21 @@ def classify_rps(fingers):
 
     return ""
 
+def connect_to_arm():
+    while True:
+        try:
+            print("Connecting to arm...")
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect((ARM_IP, PORT))
+            print("Connected to arm!")
+            return client
+        except Exception:
+            print("Connection failed. Retrying in 2 seconds...")
+            time.sleep(2)
+
 def run(camera_id, width, height):
 
-    #TCP socket setup to communicate with robot arm
-    client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client.connect((ARM_IP, PORT))
+    client = connect_to_arm()
 
     cap = cv2.VideoCapture(camera_id)
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
@@ -83,7 +93,7 @@ def run(camera_id, width, height):
 
         current_rps = ""
         last_update = 0
-        update_interval = 0.5  # evaluate twice per second
+        update_interval = 0.5
 
         while cap.isOpened():
             success, frame = cap.read()
@@ -95,8 +105,11 @@ def run(camera_id, width, height):
 
             results = hands.process(rgb)
 
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
+            now = time.time()
+            if now - last_update > update_interval:
+
+                if results.multi_hand_landmarks:
+                    hand_landmarks = results.multi_hand_landmarks[0]
 
                     mp_drawing.draw_landmarks(
                         frame,
@@ -104,22 +117,29 @@ def run(camera_id, width, height):
                         mp_hands.HAND_CONNECTIONS
                     )
 
-                    # Throttle evaluation
-                    now = time.time()
-                    if now - last_update > update_interval:
-                        fingers = fingers_up(hand_landmarks)
-                        new_rps = classify_rps(fingers)
+                    fingers = fingers_up(hand_landmarks)
+                    new_rps = classify_rps(fingers)
 
-                        if new_rps != current_rps:
-                            current_rps = new_rps
-                            print("Sending:", current_rps)
-                            try:
-                                client.sendall((current_rps + "\n").encode())
-                            except:
-                                print("Connection lost")
-                        last_update = now
+                    if new_rps == "":
+                        new_rps = "NONE"
 
-            # Draw RPS label
+                else:
+                    new_rps = "NONE"
+
+                if new_rps != current_rps:
+                    current_rps = new_rps
+                    print("Sending:", current_rps)
+
+                    try:
+                        client.sendall((current_rps + "\n").encode())
+                    except Exception:
+                        print("Connection lost. Reconnecting...")
+                        client.close()
+                        client = connect_to_arm()
+
+                last_update = now
+
+            # Draw label
             if current_rps:
                 h, w = frame.shape[:2]
                 text_size = cv2.getTextSize(
@@ -150,7 +170,6 @@ def run(camera_id, width, height):
 
     cap.release()
     cv2.destroyAllWindows()
-
 
 def main():
     parser = argparse.ArgumentParser()
