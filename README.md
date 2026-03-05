@@ -43,8 +43,8 @@ https://github.com/make2explore/MediaPipe-Installation-on-RaspberryPi/tree/main#
 ### Robot Arm
 1. Plug in the robot arm RPi/motor driver (HiWonder arm with armv7l Raspberry Pi 4)
 2. SSH into arm; Jamie's arm: `ssh -Y pi@JimmieRogers.engr.oregonstate.edu`; password is default password
-3. Make sure it's connected to wifi (the same network as the picar)
-4. Run `rps` which is an alias for `python3 arm_control_server.py` on the arm
+3. Make sure it's connected to the right wifi (the same network as the picar) 
+5. Run `rps` which is an alias for `python3 arm_control_server.py` on the arm
    1. The code is in ~/Rock-Paper-Scissors-Bot
 
 ### Vision
@@ -52,11 +52,12 @@ https://github.com/make2explore/MediaPipe-Installation-on-RaspberryPi/tree/main#
 2. SSH into car; Jamie's PiCar: `ssh -Y j@PiCar5.engr.oregonstate.edu`; ask for password
    1. For visualization, Jamie uses RealVNC (free account) to get the camera stream/model label visualization
 4. Plug in the USB camera; it seems to work best facing a wall in order to minimze overhead shadows
-5. Make sure it's connected to wifi (the same network as the arm RPi)
-6. If the python env isn't activated, run `source env/bin/activate`
+5. Make sure the wifi connection is the same network as the arm RPi
+   6. It's probably good to double check the arm ip address (`hostname -I`) is the same as what's in `rock_paper_scissors_vission.py` (`ARM_IP`)
+7. If the python env isn't activated, run `source env/bin/activate`
    1. If setting up a new RPi, create a python environment using python 3.10 - 3.12 in order to use mediapipe
    2. This should already be done in the bashrc; also make sure you haven't accidentally activated it twice
-7. Run `rps` which is an alias for `python3 rock_paper_scissors_vision.py` on the vision/picar setup
+8. Run `rps` which is an alias for `python3 rock_paper_scissors_vision.py` on the vision/picar setup
 
 ### GitHub
 - Both RPis have Jamie's ssh keys installed; you can either install your own or message Jamie for her passcode
