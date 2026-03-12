@@ -5,9 +5,9 @@ import sys
 
 # Try a few likely roots and add the one that actually contains an ArmIK/ folder
 CANDIDATE_ROOTS = [
-    Path("/home/pi/RobotSystems/ArmPi"),
-    Path("/home/pi/RobotSystems/ArmPi/ArmIK"),
-    Path("/home/pi/RobotSystems"),
+    Path("/home/pi/Rock-Paper-Scissors-Bot/ArmPi"),
+    Path("/home/pi/Rock-Paper-Scissors-Bot/ArmPi/ArmIK"),
+    Path("/home/pi/Rock-Paper-Scissors-Bot"),
 ]
 
 added = False
