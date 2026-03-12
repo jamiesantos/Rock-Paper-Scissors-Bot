@@ -28,6 +28,8 @@ from ArmIK.ArmMoveIK import ArmIK
 import HiwonderSDK.Board as Board
 AK = ArmIK()
 SERVO1 = 500
+GRIPPER_CLOSED = 500
+GRIPPER_OPEN = 100
 
 BASE_XY = (0, 12)
 UP_Z = 12
@@ -57,10 +59,20 @@ def pose_robot_move(move):
     print("Robot move:", move)
     if move == "ROCK":
         AK.setPitchRangeMoving((0, 12, 6), -60, -60, 0, 500)
+        time.sleep(0.6)
+        Board.setBusServoPulse(1, GRIPPER_CLOSED, 400)
     elif move == "PAPER":
         AK.setPitchRangeMoving((0, 14, 10), -30, -30, 0, 500)
+        time.sleep(0.6)
+        Board.setBusServoPulse(1, GRIPPER_OPEN, 400)
     elif move == "SCISSORS":
         AK.setPitchRangeMoving((2, 13, 8), -45, -45, 0, 500)
+        time.sleep(0.6)
+        for _ in range(3):
+            Board.setBusServoPulse(1, GRIPPER_CLOSED, 300)
+            time.sleep(0.4)
+            Board.setBusServoPulse(1, GRIPPER_OPEN, 300)
+            time.sleep(0.4)
     else:
         initMove()
 
