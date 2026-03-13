@@ -4,6 +4,7 @@ import time
 import argparse
 import socket
 import random
+import threading
 
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
@@ -111,12 +112,15 @@ def run(camera_id: int, width: int, height: int, headless: bool, mode: str, arm_
     # Round state machine: COOLDOWN -> WINDUP -> REVEAL -> COOLDOWN ...
     round_state = "COOLDOWN"
     state_until = 0.0
-    next_round_time = time.time()      # first round starts immediately
+    next_round_time = float("inf")      # held until user presses Enter
     stable_move_for_round = "NONE"
 
     robot_move = "—"
     winner = "—"
     current_rps = "NONE"
+
+    started = threading.Event()
+    threading.Thread(target=lambda: [input("Press Enter to start the game..."), started.set()], daemon=True).start()
 
     try:
         with mp_hands.Hands(
@@ -137,6 +141,19 @@ def run(camera_id: int, width: int, height: int, headless: bool, mode: str, arm_
                 rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
                 results = hands.process(rgb)
                 now = time.time()
+
+                # ---- Waiting for Enter ----
+                if not started.is_set():
+                    cv2.putText(frame, "Press Enter to start",
+                                (width // 2 - 200, height // 2), cv2.FONT_HERSHEY_SIMPLEX,
+                                1.0, (0, 255, 255), 2, cv2.LINE_AA)
+                    if not headless:
+                        cv2.imshow("Rock Paper Scissors (Vision Pi)", frame)
+                        cv2.waitKey(1)
+                    continue
+
+                if next_round_time == float("inf"):
+                    next_round_time = now  # first round starts immediately after Enter
 
                 # ---- Round state transitions ----
                 if round_state == "COOLDOWN" and now >= next_round_time:
